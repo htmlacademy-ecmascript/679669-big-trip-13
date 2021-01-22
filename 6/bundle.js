@@ -310,7 +310,7 @@ const events = Object(_mock_generate_trip_events__WEBPACK_IMPORTED_MODULE_0__["g
 const addEventToList = (eventListElement, event) => {
   const tripEvent = new _view_render_trip_event__WEBPACK_IMPORTED_MODULE_9__["default"](event);
   const eventSwitchButton = tripEvent.getElement().querySelector(`.event__rollup-btn`);
-  const tripForm = new _view_render_event_form__WEBPACK_IMPORTED_MODULE_8__["default"](event, event.counter);
+  const tripForm = new _view_render_event_form__WEBPACK_IMPORTED_MODULE_8__["default"](event, event.id);
   const eventEditForm = tripForm.getElement();
 
   const eventSwitchButtonHandler = () => {
