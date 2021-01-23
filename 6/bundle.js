@@ -235,7 +235,7 @@ let urlAlphabet =
 /*!**********************!*\
   !*** ./src/const.js ***!
   \**********************/
-/*! exports provided: MONTHS, MONTH_DAYS, TIME_TO_MS */
+/*! exports provided: MONTHS, MONTH_DAYS, TIME_TO_MS, KEY_CODE */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -243,6 +243,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MONTHS", function() { return MONTHS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MONTH_DAYS", function() { return MONTH_DAYS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TIME_TO_MS", function() { return TIME_TO_MS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KEY_CODE", function() { return KEY_CODE; });
 const MONTHS = [`Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, `Dec`];
 
 const MONTH_DAYS = {
@@ -264,6 +265,10 @@ const TIME_TO_MS = {
   MINUTE: 60000,
   HOUR: 360000,
   DAY: 86400000,
+};
+
+const KEY_CODE = {
+  ESC: `escape`,
 };
 
 
@@ -290,6 +295,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_render_event_form__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./view/render-event-form */ "./src/view/render-event-form.js");
 /* harmony import */ var _view_render_trip_event__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./view/render-trip-event */ "./src/view/render-trip-event.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./const */ "./src/const.js");
+
 
 
 
@@ -305,25 +312,39 @@ __webpack_require__.r(__webpack_exports__);
 const RENDER_EVENTS_COUNT = 4;
 const events = Object(_mock_generate_trip_events__WEBPACK_IMPORTED_MODULE_0__["generateEvents"])(RENDER_EVENTS_COUNT);
 
-// Обработчики события смены формы на список и наоборот
+// Обработчик события открытия/закрытия формы редактирования
 
 const addEventToList = (eventListElement, event) => {
   const tripEvent = new _view_render_trip_event__WEBPACK_IMPORTED_MODULE_9__["default"](event);
-  const eventSwitchButton = tripEvent.getElement().querySelector(`.event__rollup-btn`);
+  const eventEditButton = tripEvent.getElement().querySelector(`.event__rollup-btn`);
   const tripForm = new _view_render_event_form__WEBPACK_IMPORTED_MODULE_8__["default"](event, event.id);
   const eventEditForm = tripForm.getElement();
 
-  const eventSwitchButtonHandler = () => {
+  const escKeyDownButtonHandler = (evt) => {
+    if (evt.key === _const__WEBPACK_IMPORTED_MODULE_11__["KEY_CODE"].ESC) {
+      eventToFormReplaceHandler();
+      document.removeEventListener(`keydown`, escKeyDownButtonHandler);
+    }
+  };
+
+  const eventToFormReplaceHandler = () => {
     eventListElement.replaceChild(tripForm.getElement(), tripEvent.getElement());
   };
 
-  const formSwitchSubmitHandler = (evt) => {
+  const formToEventReplaceHandler = (evt) => {
     evt.preventDefault();
     eventListElement.replaceChild(tripEvent.getElement(), tripForm.getElement());
   };
 
-  eventSwitchButton.addEventListener(`click`, eventSwitchButtonHandler);
-  eventEditForm.addEventListener(`submit`, formSwitchSubmitHandler);
+  eventEditButton.addEventListener(`click`, () => {
+    eventToFormReplaceHandler()
+    document.addEventListener(`keydown`, escKeyDownButtonHandler);
+  });
+
+  eventEditForm.addEventListener(`submit`, () => {
+    formToEventReplaceHandler();
+    document.removeEventListener(`keydown`, escKeyDownButtonHandler);
+  });
 
   Object(_utils__WEBPACK_IMPORTED_MODULE_10__["renderElement"])(eventListElement, tripEvent.getElement());
 };
@@ -357,14 +378,8 @@ Object(_utils__WEBPACK_IMPORTED_MODULE_10__["renderElement"])(tripSortElement, n
 
 const eventsListElement = tripEventsElement.querySelector(`.trip-events__list`);
 
-// форма
-// renderElement(eventsListElement, new RenderEventFormView(events[getRandomInteger(0, events.length)], events.counter).getElement(),`insertBefore`);
-
-// Создание моков
-
 events.forEach((event) => {
   addEventToList(eventsListElement, event);
-// renderElement(eventsListElement, new TripEventView(event).getElement());
 });
 
 
@@ -393,24 +408,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const getTripEventData = () => {
-  const EVENT = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomItemArr"])(_trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["eventTypes"]);
-  const START_DATE = new Date(Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getRandomStartDate"])());
-  const END_DATE = Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getEndDate"])(START_DATE);
-  const PHOTOS = Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["generateRandomPhoto"])();
-  const HAS_OFFERS = Math.random() > 0.5;
-  const DATE_DIFF = Object(_view_trip_event_time__WEBPACK_IMPORTED_MODULE_3__["getTimeDiff"])(START_DATE, END_DATE);
+  const event = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomItemArr"])(_trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["eventTypes"]);
+  const startDate = new Date(Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getRandomStartDate"])());
+  const endDate = Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getEndDate"])(startDate);
+  const photos = Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["generateRandomPhoto"])();
+  const hasOffers = Math.random() > 0.5;
+  const dateDiff = Object(_view_trip_event_time__WEBPACK_IMPORTED_MODULE_3__["getTimeDiff"])(startDate, endDate);
 
   return {
-    eventType: EVENT,
+    eventType: event,
     eventDestination: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomItemArr"])(_trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["eventDestinations"]),
-    eventOffers: HAS_OFFERS ? Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getRandomOffers"])(_trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["offers"]) : null,
+    eventOffers: hasOffers ? Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["getRandomOffers"])(_trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["offers"]) : null,
     destinationDescription: Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["generateRandomDescription"])(),
-    destinationPhoto: PHOTOS,
-    startTime: START_DATE,
-    parsedStartDate: Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["parseDate"])(START_DATE),
-    endTime: END_DATE,
-    timeDiff: DATE_DIFF,
-    action: _trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["eventTypeActionsMap"][EVENT],
+    destinationPhoto: photos,
+    startTime: startDate,
+    parsedStartDate: Object(_mock_utils__WEBPACK_IMPORTED_MODULE_1__["parseDate"])(startDate),
+    endTime: endDate,
+    timeDiff: dateDiff,
+    action: _trip_events_mocks__WEBPACK_IMPORTED_MODULE_2__["eventTypeActionsMap"][event],
     isFavorite: Boolean(Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 1)),
     price: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(10, 1000),
     id: Object(nanoid__WEBPACK_IMPORTED_MODULE_4__["nanoid"])(),
@@ -466,13 +481,13 @@ const generateRandomPhoto = () => {
 };
 
 const getRandomStartDate = () => {
-  const YEAR = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(2020, 2022);
-  const MONTH = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 12);
-  const DAY = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 31);
-  const HOUR = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 23);
-  const MINUTES = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 59);
+  const year = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(2020, 2022);
+  const month = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 12);
+  const day = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 31);
+  const hour = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 23);
+  const minutes = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(0, 59);
 
-  return new Date(YEAR, MONTH, DAY, HOUR, MINUTES);
+  return new Date(year, month, day, hour, minutes);
 };
 
 const getEndDate = (startDate) => {
@@ -480,10 +495,10 @@ const getEndDate = (startDate) => {
 };
 
 const getRandomOffers = (offers) => {
-  const OFFERS_COUNT = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 5);
+  const offersCount = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomInteger"])(1, 5);
   const RANDOM_OFFERS = [];
 
-  for (let i = 0; i < OFFERS_COUNT; i++) {
+  for (let i = 0; i < offersCount; i++) {
     const offer = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["getRandomItemArr"])(offers);
     if (RANDOM_OFFERS.indexOf(offer) === -1) {
       RANDOM_OFFERS.push(offer);
@@ -494,11 +509,11 @@ const getRandomOffers = (offers) => {
 };
 
 const parseDate = (date) => {
-  const RECIEVED_DATE = date.getDate();
-  const RECIEVED_MONTH = date.getMonth();
-  const RECIEVED_YEAR = date.getFullYear();
+  const currentDate = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
 
-  return Date.parse((new Date(RECIEVED_YEAR, RECIEVED_MONTH, RECIEVED_DATE)).toString());
+  return Date.parse((new Date(year, month, currentDate)).toString());
 };
 
 
@@ -670,16 +685,29 @@ const sortTripEvents = (events) => {
 /*!****************************************!*\
   !*** ./src/view/get-days-and-dates.js ***!
   \****************************************/
-/*! exports provided: getEventsDates */
+/*! exports provided: getEventsDates, getDateFormFormat */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getEventsDates", function() { return getEventsDates; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDateFormFormat", function() { return getDateFormFormat; });
 const getEventsDates = (events) => {
   return events.map((event) => {
     return new Date(event.startTime.getFullYear(), event.startTime.getMonth(), event.startTime.getDate());
   });
+};
+
+const getDateFormFormat = (date) => {
+  const year = date.getFullYear().toString().slice(2, 4);
+
+  const dateValues = Array.of(date.getDate(), date.getMonth(), date.getHours(), date.getMinutes()).map((value) => {
+    return value < 10 ? `0` + value : value;
+  });
+
+  const [day, month, hours, minutes] = dateValues;
+
+  return day + `/` + month + `/` + year + ` ` + hours + `:` + minutes;
 };
 
 
@@ -844,8 +872,8 @@ class HeaderTripCost {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RenderEventForm; });
 /* harmony import */ var _mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../mock/trip-events-mocks */ "./src/mock/trip-events-mocks.js");
-/* harmony import */ var _trip_event_time__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./trip-event-time */ "./src/view/trip-event-time.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/utils.js");
+/* harmony import */ var _get_days_and_dates__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./get-days-and-dates */ "./src/view/get-days-and-dates.js");
 
 
 
@@ -903,13 +931,14 @@ const renderPhotos = (photos) => {
 };
 
 const createEventForm = (events, id) => {
-  const {eventType, eventDestination, destinationDescription, destinationPhoto, eventOffers, price, action, startTime} = events;
+  const {eventType, eventDestination, destinationDescription, destinationPhoto, eventOffers, price, action, startTime, endTime} = events;
 
   const eventTypesList = renderTypesList(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventTypes"].slice(0, 7));
   const activitiesTypesList = renderTypesList(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventTypes"].slice(7, 10));
   const eventOptions = renderOptions(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventDestinations"]);
   const eventPhotos = renderPhotos(destinationPhoto);
-  const startDate = Object(_trip_event_time__WEBPACK_IMPORTED_MODULE_1__["getEventTimeFormat"])(startTime);
+  const startDate = Object(_get_days_and_dates__WEBPACK_IMPORTED_MODULE_2__["getDateFormFormat"])(startTime);
+  const endDate = Object(_get_days_and_dates__WEBPACK_IMPORTED_MODULE_2__["getDateFormFormat"])(endTime);
   const offers = eventOffers !== null ? renderOffers(eventOffers) : ``;
 
   return `<form class="trip-events__item  event  event--edit" action="#" method="post">
@@ -954,7 +983,7 @@ const createEventForm = (events, id) => {
       <label class="visually-hidden" for="event-end-time-${id}">
         To
       </label>
-      <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="18/03/19 00:00">
+      <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${endDate}">
     </div>
     <div class="event__field-group  event__field-group--price">
       <label class="event__label" for="event-price-${id}">
@@ -991,7 +1020,7 @@ class RenderEventForm {
 
   getElement() {
     if (!this._element) {
-      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["createElement"])(this.getTemplate());
+      this._element = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["createElement"])(this.getTemplate());
     }
 
     return this._element;
@@ -1024,14 +1053,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const renderEventOffers = (offers) => {
-  return offers.map((offer, index) => {
-    const {id, title, price} = offer;
-    const isChecked = Math.random() > 0.5;
+  return offers.map((offer) => {
+    const {title, price} = offer;
     return (
-      `<div class="event__offer-selector">
-<input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-${index + 1}" type="checkbox" name="event-offer-${id} ${isChecked ? `checked` : ``}">
-<label class="event__offer-label" for="event-offer-${id}-${index + 1}">
-<span class="event__offer-title">${title}</span>&plus;&euro;&nbsp;<span class="event__offer-price">${price}</span></div>`);
+      `<li class="event__offer">
+<span class="event__offer-title">${title}</span>
+&plus;&euro;&nbsp;
+<span class="event__offer-price">${price}</span>
+</li>`);
   })
     .join(`\n`);
 };
