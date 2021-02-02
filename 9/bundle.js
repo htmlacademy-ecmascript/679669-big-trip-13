@@ -331,7 +331,7 @@ Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(tripInfoContainer, 
 Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(tripControlsFirstHeaderElement, new _view_navigation__WEBPACK_IMPORTED_MODULE_2__["default"](), `insertAfter`);
 Object(_utils_render__WEBPACK_IMPORTED_MODULE_6__["render"])(tripControlsSecondHeaderElement, new _view_filters__WEBPACK_IMPORTED_MODULE_3__["default"](), `insertAfter`);
 
-// доска (презентер)
+// доска и эвенты (презентер)
 tripBoardPresenter.init(events);
 
 
@@ -582,12 +582,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_trip_events_container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/trip-events-container */ "./src/view/trip-events-container.js");
 /* harmony import */ var _view_without_events__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view/without-events */ "./src/view/without-events.js");
 /* harmony import */ var _utils_render__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils/render */ "./src/utils/render.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../const */ "./src/const.js");
-/* harmony import */ var _view_trip_event__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../view/trip-event */ "./src/view/trip-event.js");
-/* harmony import */ var _view_edit_form__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../view/edit-form */ "./src/view/edit-form.js");
-
-
-
 
 
 
@@ -603,7 +597,6 @@ class TripBoard {
   }
 
   init(tripEvents) {
-    debugger;
     this._tripEvents = tripEvents.slice();
 
     if (!this._tripEvents.length) {
@@ -616,7 +609,7 @@ class TripBoard {
     this._renderTripEventsContainer();
 
     this._tripEvents.forEach((event) => {
-      this._renderEvent(event);
+      this._renderEvent(event, event.id);
     });
   }
 
@@ -625,45 +618,16 @@ class TripBoard {
   }
 
   _renderTripEventsContainer() {
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["render"])(this._eventSortComponent, this._tripEventsContainerComponent, `InsertAfter`);
+    Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["render"])(this._eventSortComponent, this._tripEventsContainerComponent);
   }
 
   _renderWithoutEvents() {
-
     Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["render"])(this._tripEventsSection, this._boardWithoutEventsComponent);
-
   }
 
-  _renderEvent(event) {
-    const tripEventComponent = new _view_trip_event__WEBPACK_IMPORTED_MODULE_5__["default"](event);
-    const tripFormComponent = new _view_edit_form__WEBPACK_IMPORTED_MODULE_6__["default"](event, event.id);
-
-    const eventToFormReplaceHandler = () => {
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["replace"])(tripFormComponent, tripEventComponent);
-    };
-
-    const formToEventReplaceHandler = () => {
-      Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["replace"])(tripEventComponent, tripFormComponent);
-    };
-
-    const escKeyDownButtonHandler = (evt) => {
-      if (evt.code === _const__WEBPACK_IMPORTED_MODULE_4__["KEY_CODE"].ESC) {
-        formToEventReplaceHandler();
-        document.removeEventListener(`keydown`, escKeyDownButtonHandler);
-      }
-    };
-
-    tripEventComponent.setClickHandler(() => {
-      eventToFormReplaceHandler();
-      document.addEventListener(`keydown`, escKeyDownButtonHandler);
-    });
-
-    tripFormComponent.setSubmitHandler(() => {
-      formToEventReplaceHandler();
-      document.removeEventListener(`keydown`, escKeyDownButtonHandler);
-    });
-
-    Object(_utils_render__WEBPACK_IMPORTED_MODULE_3__["render"])(this._tripEventsContainerComponent, tripEventComponent);
+  _renderEvent(event, id) {
+    const eventPresenter = new Event(this._tripEventsContainerComponent);
+    eventPresenter.init(event, id);
   }
 
 }
@@ -921,180 +885,6 @@ class Cost extends _abstract__WEBPACK_IMPORTED_MODULE_0__["default"] {
 
 /***/ }),
 
-/***/ "./src/view/edit-form.js":
-/*!*******************************!*\
-  !*** ./src/view/edit-form.js ***!
-  \*******************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RenderEventForm; });
-/* harmony import */ var _mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../mock/trip-events-mocks */ "./src/mock/trip-events-mocks.js");
-/* harmony import */ var _get_days_and_dates__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./get-days-and-dates */ "./src/view/get-days-and-dates.js");
-/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
-
-
-
-
-const renderEventOffers = (offers) => {
-  return offers.map((offer, index) => {
-    const {id, title, price} = offer;
-    const isChecked = Math.random() > 0.5;
-    return (
-      `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-${index + 1}"
-              type="checkbox" name="event-offer-${id}" ${isChecked ? `checked` : ``}>
-          <label class="event__offer-label" for="event-offer-${id}-${index + 1}">
-          <span class="event__offer-title">${title}</span>
-              &plus;
-              &euro;&nbsp;<span class="event__offer-price">${price}</span>
-          </label>
-      </div>`
-    );
-  })
-    .join(``);
-};
-
-const renderOffers = (offers) => {
-  const eventOffers = renderEventOffers(offers);
-  return `<section class="event__section  event__section--offers">
-              <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-              <div class="event__available-offers">
-                  ${eventOffers}
-              </div>
-          </section>`;
-};
-
-const renderOptions = (destinations) => {
-  return destinations.map((destination) => {
-    return `<option value="${destination}"></option>`;
-  }).join(`\n`);
-};
-
-const renderTypesList = (types) => {
-  return types.map((type, id) => {
-    return `<div class="event__type-item">
-              <input id="event-type-${type.toLowerCase()}-${id + 1}" class="event__type-input  visually-hidden"
-                   type="radio" name="event-type" value="${type}">
-              <label class="event__type-label  event__type-label--${type.toLowerCase()}"
-                  for="event-type-${type.toLowerCase()}-${id + 1}">${type}</label>
-              </div>`;
-  }).join(`\n`);
-};
-
-const renderPhotos = (photos) => {
-  return photos.map((photo) => {
-    return `<img class="event__photo" src="${photo}" alt="Event photo">`;
-  }).join(`\n`);
-};
-
-const editForm = (events, id) => {
-  const {eventType, eventDestination, destinationDescription, destinationPhoto, eventOffers, price, action, startTime, endTime} = events;
-
-  const eventTypesList = renderTypesList(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventTypes"].slice(0, 7));
-  const activitiesTypesList = renderTypesList(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventTypes"].slice(7, 10));
-  const eventOptions = renderOptions(_mock_trip_events_mocks__WEBPACK_IMPORTED_MODULE_0__["eventDestinations"]);
-  const eventPhotos = renderPhotos(destinationPhoto);
-  const startDate = Object(_get_days_and_dates__WEBPACK_IMPORTED_MODULE_1__["getDateFormFormat"])(startTime);
-  const endDate = Object(_get_days_and_dates__WEBPACK_IMPORTED_MODULE_1__["getDateFormFormat"])(endTime);
-  const offers = eventOffers !== null ? renderOffers(eventOffers) : ``;
-
-  return `<form class="trip-events__item  event  event--edit" action="#" method="post">
-  <header class="event__header">
-    <div class="event__type-wrapper">
-      <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
-        <span class="visually-hidden">Choose event type</span>
-        <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType.toLowerCase()}.png" alt="Event ${eventType.toLowerCase()} icon">
-      </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
-      <div class="event__type-list">
-        <fieldset class="event__type-group">
-          <legend class="visually-hidden">Transfer</legend>
-          <div class="event__type-item">
-            ${eventTypesList}
-          </div>
-        </fieldset>
-        <fieldset class="event__type-group">
-          <legend class="visually-hidden">Activity</legend>
-          <div class="event__type-item">
-            ${activitiesTypesList}
-          </div>
-        </fieldset>
-      </div>
-    </div>
-    <div class="event__field-group  event__field-group--destination">
-      <label class="event__label  event__type-output" for="event-destination-${id}">
-        ${eventType} ${action}
-      </label>
-
-<input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${eventDestination}" list="destination-list-1">
-      <datalist id="destination-list-${id}">
-        ${eventOptions}
-      </datalist>
-    </div>
-    <div class="event__field-group  event__field-group--time">
-      <label class="visually-hidden" for="event-start-time-${id}">
-        From
-      </label>
-      <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${startDate}">
-      &mdash;
-      <label class="visually-hidden" for="event-end-time-${id}">
-        To
-      </label>
-      <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${endDate}">
-    </div>
-    <div class="event__field-group  event__field-group--price">
-      <label class="event__label" for="event-price-${id}">
-        <span class="visually-hidden">Price</span>
-        &euro;
-      </label>
-      <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}">
-    </div>
-    <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Cancel</button>
-  </header>
-  <section class="event__details">
-    ${offers}
-  <p class="event__destination-description">${destinationDescription}</p>
-        <div class="event__photos-container">
-          <div class="event__photos-tape">
-            ${eventPhotos}
-          </div>
-        </div>
-      </section>
-  </section>
-</form>`;
-};
-
-class RenderEventForm extends _abstract__WEBPACK_IMPORTED_MODULE_2__["default"] {
-  constructor(event, id) {
-    super();
-    this._event = event;
-    this._id = id;
-    this._submitHandler = this._submitHandler.bind(this);
-  }
-
-  getTemplate() {
-    return editForm(this._event, this._id);
-  }
-
-  _submitHandler(evt) {
-    evt.preventDefault();
-
-    this._callback.submit();
-  }
-  setSubmitHandler(callback) {
-    this._callback.submit = callback;
-
-    this.getElement().addEventListener(`submit`, this._submitHandler);
-  }
-}
-
-
-/***/ }),
-
 /***/ "./src/view/event-sort.js":
 /*!********************************!*\
   !*** ./src/view/event-sort.js ***!
@@ -1313,114 +1103,6 @@ const getEventTimeFormat = (time) => {
 
   return timeValueArr.join(`:`);
 };
-
-
-/***/ }),
-
-/***/ "./src/view/trip-event.js":
-/*!********************************!*\
-  !*** ./src/view/trip-event.js ***!
-  \********************************/
-/*! exports provided: renderOffers, default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderOffers", function() { return renderOffers; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TripEvent; });
-/* harmony import */ var _trip_event_time__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./trip-event-time */ "./src/view/trip-event-time.js");
-/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../const */ "./src/const.js");
-/* harmony import */ var _abstract__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstract */ "./src/view/abstract.js");
-
-
-
-
-const renderEventOffers = (offers) => {
-  return offers.map((offer) => {
-    const {title, price} = offer;
-    return (
-      `<li class="event__offer">
-<span class="event__offer-title">${title}</span>
-&plus;&euro;&nbsp;
-<span class="event__offer-price">${price}</span>
-</li>`);
-  })
-    .join(`\n`);
-};
-
-const renderOffers = (offers) => {
-  const eventOffers = renderEventOffers(offers);
-
-  return (`<section class="event__section event__section--offers">
-<div class="event__available-offers">${eventOffers}</div>
-</section>`);
-};
-
-const renderTripEventTemplate = (event) => {
-  const {eventType, eventDestination, eventOffers, price, action, startTime, endTime, timeDiff} = event;
-
-  const tripEventOffers = eventOffers !== null ? renderOffers(eventOffers) : ``;
-  const start = Object(_trip_event_time__WEBPACK_IMPORTED_MODULE_0__["getEventTimeFormat"])(startTime);
-  const end = Object(_trip_event_time__WEBPACK_IMPORTED_MODULE_0__["getEventTimeFormat"])(endTime);
-
-  return `<li class="trip-events__item">
-              <div class="event">
-                <time class="event__date" datetime="${startTime.toISOString()}">${_const__WEBPACK_IMPORTED_MODULE_1__["MONTHS"][startTime.getMonth() - 1]} ${startTime.getDate()}</time>
-                <div class="event__type">
-                  <img class="event__type-icon" width="42" height="42" src="img/icons/${eventType.toLowerCase()}.png" alt="Event ${eventType} icon">
-                </div>
-                <h3 class="event__title">${eventType} ${action} ${eventDestination}</h3>
-                <div class="event__schedule">
-                  <p class="event__time">
-                    <time class="event__start-time" datetime="${startTime.toISOString()}">${start}</time>
-                    &mdash;
-                    <time class="event__end-time" datetime="${endTime.toISOString()}">${end}</time>
-                  </p>
-                  <p class="event__duration">${timeDiff}</p>
-                </div>
-                <p class="event__price">
-                  &euro;&nbsp;<span class="event__price-value">${price}</span>
-                </p>
-                <h4 class="visually-hidden">Offers:</h4>
-                <ul class="event__selected-offers">
-                  ${tripEventOffers}
-                </ul>
-                <button class="event__favorite-btn" type="button">
-                  <span class="visually-hidden">Add to favorite</span>
-                  <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
-                    <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
-                  </svg>
-                </button>
-                <button class="event__rollup-btn" type="button">
-                  <span class="visually-hidden">Open event</span>
-                </button>
-              </div>
-            </li>`;
-};
-
-class TripEvent extends _abstract__WEBPACK_IMPORTED_MODULE_2__["default"] {
-  constructor(event) {
-    super();
-    this._event = event;
-    this._clickHandler = this._clickHandler.bind(this);
-  }
-
-  getTemplate() {
-    return renderTripEventTemplate(this._event);
-  }
-
-  _clickHandler(evt) {
-    evt.preventDefault();
-
-    this._callback.click();
-  }
-
-  setClickHandler(callback) {
-    this._callback.click = callback;
-
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
-  }
-}
 
 
 /***/ }),
